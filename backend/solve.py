@@ -70,7 +70,6 @@ def rewrite_equivalence(expression):
     for i in range(0, eq_count + 1):
         for index, char in enumerate(expression):
             if char == "↔":
-                print(expression)
                 if expression[index - 1] == ")" and expression[index + 1] == "(":
                     open_bracket_index = get_bracket_index(index - 2, 0, expression, "open")
                     close_bracket_index = get_bracket_index(index + 2, len(expression), expression, "close")
@@ -122,9 +121,7 @@ def solve(formula: str):
 
 def prepare_for_cnf(formula: str) -> str:
     translated_formula = formula.translate(OPERATOR_TRANSLATOR)
-    print(translated_formula)
     formula_without_equivalence = rewrite_equivalence(translated_formula)
-    print(formula_without_equivalence)
     return formula_without_equivalence
 
 

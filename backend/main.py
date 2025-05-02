@@ -22,7 +22,7 @@ class User(db.Model):  # type: ignore
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
 
-"""
+
 class FormulaHistory(db.Model):  # type: ignore
     __tablename__ = 'formula_history'
 
@@ -31,9 +31,8 @@ class FormulaHistory(db.Model):  # type: ignore
     result = db.Column(db.String(50), nullable=True)
     timestamp = db.Column(db.DateTime, default=db.func.now())
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.userID'), nullable=False)
     user = db.relationship('User', backref=db.backref('formulas', lazy=True))
-"""
 
 
 # Inicializace databáze
