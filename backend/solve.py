@@ -221,5 +221,4 @@ def get_result(clauses):
     for clause in clauses:
         if not clause:
             clauses.remove(clause)
-    print(clauses)
     return clauses
