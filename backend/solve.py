@@ -1,3 +1,5 @@
+from typing import Optional, List, Tuple
+
 from sympy import symbols  # type: ignore
 from sympy.logic.boolalg import to_cnf  # type: ignore
 from sympy.logic.inference import satisfiable  # type: ignore
@@ -60,10 +62,12 @@ def get_literal_index(expr, index, side):
         else:
             return index + 1
 
+
 def format_expression_without_eq(expr, eq_index, first_part_index, second_part_index):
     first_part = "(" + "~" + expr[first_part_index:eq_index] + "|" + expr[eq_index + 1:second_part_index + 1] + ")"
     second_part = "(" + expr[first_part_index:eq_index] + "|" + "~" + expr[eq_index + 1:second_part_index + 1] + ")"
     return expr[0:first_part_index] + first_part + "&" + second_part + expr[second_part_index + 1:]
+
 
 def rewrite_equivalence(expression):
     eq_count = expression.count("↔")
@@ -73,25 +77,29 @@ def rewrite_equivalence(expression):
                 if expression[index - 1] == ")" and expression[index + 1] == "(":
                     open_bracket_index = get_bracket_index(index - 2, 0, expression, "open")
                     close_bracket_index = get_bracket_index(index + 2, len(expression), expression, "close")
-                    expression = format_expression_without_eq(expression, index, open_bracket_index, close_bracket_index)
+                    expression = format_expression_without_eq(expression, index, open_bracket_index,
+                                                              close_bracket_index)
                     break
 
                 if expression[index - 1] == ")" and expression[index + 1] != "(":
                     open_bracket_index = get_bracket_index(index - 2, 0, expression, "open")
                     right_literal_index = get_literal_index(expression, index, "right")
-                    expression = format_expression_without_eq(expression, index, open_bracket_index, right_literal_index)
+                    expression = format_expression_without_eq(expression, index, open_bracket_index,
+                                                              right_literal_index)
                     break
 
                 if expression[index - 1] != ")" and expression[index + 1] == "(":
                     left_literal_index = get_literal_index(expression, index, "left")
                     close_bracket_index = get_bracket_index(index + 2, len(expression), expression, "close")
-                    expression = format_expression_without_eq(expression, index, left_literal_index, close_bracket_index)
+                    expression = format_expression_without_eq(expression, index, left_literal_index,
+                                                              close_bracket_index)
                     break
 
                 if expression[index - 1] != ")" and expression[index + 1] != "(":
                     left_literal_index = get_literal_index(expression, index, "left")
                     right_literal_index = get_literal_index(expression, index, "right")
-                    expression = format_expression_without_eq(expression, index, left_literal_index, right_literal_index)
+                    expression = format_expression_without_eq(expression, index, left_literal_index,
+                                                              right_literal_index)
                     break
 
     return expression
@@ -114,7 +122,11 @@ def solve(formula: str):
     back_translated_formula = translate_back(cnf_str)
     steps.append("Převod do kunjuktivní normální formy: %s" % back_translated_formula)
     clause_list = split_to_list_of_literals(back_translated_formula)
-    resolution_steps, result = resolution(clause_list)
+    resolution_steps, clauses = resolution(clause_list, [])
+    unique_literals = sorted(set(literal for clause in clauses for literal in clause))
+    resolution_steps.append("Zbytek po použití rezoluční metody: {%s}" % ", ".join(unique_literals))
+    result, result_desc = get_result(clauses)
+    resolution_steps.append(result_desc)
     steps.extend(resolution_steps)
     return steps, result
 
@@ -140,61 +152,131 @@ def split_to_list_of_literals(formula: str) -> list[list[str]]:
     return clauses
 
 
-def resolution(clauses):
-    if clauses[0][0] == "True":
-        return ["Formule je tautologie, není potřeba použít rezoluční metodu."]
-    else:
-        steps = ["Použití rezoluční metody:", "Množina klauzulí: %s" % clauses_to_string(clauses)]
+def resolution(clauses, steps):
+    steps.append("Použití rezoluční metody:")
+    steps.append("Množina klauzulí: %s" % clauses_to_string(clauses))
 
-    def update_clauses(clause1, clause2):
-        resolvent = make_resolvent(copy.deepcopy(clause1), copy.deepcopy(clause2))
-        steps.append("Z klauzulí: " + clauses_to_string([clause1]) + " a " + clauses_to_string([clause2]) + " vznikne resolventa: " + clauses_to_string([resolvent]))
-        clauses.remove(clause1)
-        clauses.remove(clause2)
-        clauses.append(resolvent)
-        steps.append("Zbývající klauzule: %s" % clauses_to_string(clauses))
+    # TAUTOLOGY CHECK
+    step, clauses = remove_tautologies(clauses)
+    steps.extend(step)
 
-    found = False
-    while True:
-        if found:
-            found = False
-        for i, clause in enumerate(clauses):
-            for literal in clause:
-                for j, compared_clause in enumerate(clauses):
-                    if i == j:
-                        break
-                    for compared_literal in compared_clause:
-                        if len(literal) == 2 and len(compared_literal) == 1:
-                            if literal[1] == compared_literal:
-                                update_clauses(clause, compared_clause)
-                                found = True
-                                break
+    # ONE TYPE LITERAL CHECK
+    step, clauses = remove_single_type_occurrences(clauses)
+    steps.extend(step)
 
-                        elif len(literal) == 1 and len(compared_literal) == 2:
-                            if literal == compared_literal[1]:
-                                update_clauses(clause, compared_clause)
-                                found = True
-                                break
-                    if found:
-                        break
-                if found:
-                    break
-            if found:
-                break
-        if not found:
-            steps.pop()
-            result = get_result(clauses)
-            steps.append("Zbytek po použití rezoluční metody: %s" % clauses_to_string(result))
-            if result:
-                steps.append("Formule není splnitelná")
-                return steps, False
+    # RESOLUTION
+    literal_set = get_set_of_literals(clauses)
+
+    # GET POSITIVE AND NEGATIVE INDEXES OF EACH LITERAL
+    for literal in literal_set:
+        print(literal, "|", clauses)
+        neg_literals, pos_literals = get_neg_pos_literal_indexes(clauses, literal)
+
+        # MAKE RESOLVENT
+        resolvent_list = []
+        for pos_literal in pos_literals:
+            for neg_literal in neg_literals:
+                resolvent = make_resolvent(copy.deepcopy(clauses[pos_literal]), copy.deepcopy(clauses[neg_literal]))
+                steps.append("Z klauzulí: %s a %s vznikne rezolventa: %s" % (clauses_to_string([clauses[pos_literal]]), clauses_to_string([clauses[neg_literal]]), clauses_to_string([resolvent]) if resolvent else "{}"))
+                if resolvent:
+                    resolvent_list.append(resolvent)
+
+        # REMOVE CLAUSES USED TO COMBINE AND ADD NEW RESOLVENT
+        clauses_to_remove = sorted(set(pos_literals + neg_literals), reverse=True)
+        print(resolvent_list, "|", clauses_to_remove)
+        if len(clauses) > 1 and clauses_to_remove:
+            for index in clauses_to_remove:
+                clauses.pop(index)
+            clauses.extend(resolvent_list)
+            clauses = remove_duplicates(clauses)
+            steps.append("Množina klauzulí: %s" % clauses_to_string(clauses))
+
+    return steps, clauses
+
+def remove_single_type_occurrences(clauses):
+    steps = []
+    literal_set = get_set_of_literals(clauses)
+    for literal in literal_set:
+        neg_literals, pos_literals = get_neg_pos_literal_indexes(clauses, literal)
+        step, indexes_to_remove = check_single_type_occurrence(pos_literals, neg_literals, clauses, literal)
+        if step:
+            for index in sorted(set(indexes_to_remove), reverse=True):
+                if index <= len(clauses):
+                    clauses.pop(index)
+            steps.extend(step)
+            steps.append("Množina klauzulí: %s" % clauses_to_string(clauses))
+    return steps, clauses
+
+
+def check_single_type_occurrence(pos_literals: list[int], neg_literals: list[int], clauses: list[list[str]], literal: str) -> Tuple[List, List]:
+    """
+    If not "a" and "¬a" remove all clauses with that literal.
+    """
+    if not pos_literals and not neg_literals:
+        return [], []
+
+    steps = ""
+    if not pos_literals:
+        steps += "Literál ¬%s nemá opačný výskyt, klauzule: " % literal
+        step = ""
+        for index in neg_literals:
+            step += "%s" % clauses_to_string([clauses[index]])
+        steps += step + " bude/budou odstraněny."
+        return [steps], neg_literals
+
+    if not neg_literals:
+        steps += "Literál %s nemá opačný výskyt, klauzule: " % literal
+        step = ""
+        for index in pos_literals:
+            step += "%s" % clauses_to_string([clauses[index]])
+        steps += step + " bude/budou odstraněny."
+        return [steps], pos_literals
+
+    return [], []
+
+
+def get_set_of_literals(clauses: list[list[str]]) -> list[str]:
+    literal_set = set()
+    for clause in clauses:
+        for literal in clause:
+            if len(literal) == 1:
+                literal_set.add(literal)
+            elif len(literal) == 2:
+                literal_set.add(literal[1])
+
+    return sorted(literal_set)
+
+def get_neg_pos_literal_indexes(clauses: list[list[str]], literal) -> tuple[list[int], list[int]]:
+    neg_literals = []
+    pos_literals = []
+    for index, clause in enumerate(clauses):
+        for comp_literal in clause:
+            if comp_literal.startswith("¬"):
+                if literal == comp_literal[1]:
+                    neg_literals.append(index)
             else:
-                steps.append("Formule je splnitelná")
-                return steps, True
+                if literal == comp_literal:
+                    pos_literals.append(index)
 
+    if not neg_literals or not pos_literals:
+        return [], []
+    return neg_literals, pos_literals
+
+
+def remove_tautologies(clauses):
+    steps = []
+    for index, clause in enumerate(clauses):
+        if is_tautology(clause):
+            steps.append("Klauzule: %s je tautologie - odstraňuje se." % clauses_to_string([clause]))
+            clauses.pop(index)
+            steps.append("Množina klauzulí: %s" % clauses_to_string(clauses))
+    return steps, clauses
 
 
 def make_resolvent(clause: list, clause2: list) -> list:
+    """
+    Return resolvent out of two clauses.
+    """
     resolvent = set(clause + clause2)
     resolvent_copy = resolvent.copy()
     for literal in resolvent_copy:
@@ -209,16 +291,46 @@ def make_resolvent(clause: list, clause2: list) -> list:
     return list(resolvent)
 
 
+def is_tautology(clause: list[str]) -> bool:
+    """
+    Return bool whether clause is tautology.
+    """
+    positive_literals = set()
+    negative_literals = set()
+
+    for literal in clause:
+        if literal.startswith("¬"):
+            negative_literals.add(literal[1:])
+        else:
+            positive_literals.add(literal)
+
+    return not positive_literals.isdisjoint(negative_literals)
+
+
+def remove_duplicates(list_of_clauses: list[list[str]]) -> list:
+    result = []
+    for item in list_of_clauses:
+        if item not in result:
+            result.append(item)
+    return result
+
+
 def clauses_to_string(clauses: list[list[str]]) -> str:
+    """
+    Convert a set of clauses to string.
+    """
     clauses_str = ""
     for clause in clauses:
         clauses_str += "{"
-        clauses_str += ", ".join(clause) + "},"
+        clauses_str += ", ".join(clause) + "}, "
     return clauses_str[:-1]
 
 
-def get_result(clauses):
+def get_result(clauses: list[list[str]]) -> Tuple[bool, str]:
     for clause in clauses:
         if not clause:
             clauses.remove(clause)
-    return clauses
+    if clauses:
+        return False, "Formule není splnitelná"
+    else:
+        return True, "Formule je splnitelná"

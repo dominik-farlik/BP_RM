@@ -68,7 +68,7 @@ const LogicFormulaApp = () => {
             <form onSubmit={handleSubmit}>
                 <div className="input-group mb-3">
                     <input type="text" id="formula" value={formula} onChange={(e) => setFormula(e.target.value)}
-                           className="form-control" placeholder="Enter formula"
+                           className="form-control" placeholder="Enter formula" required
                     />
                     <button type="submit" className="btn btn-success">Solve</button>
                 </div>

@@ -129,4 +129,5 @@ def login():
 
 
 if __name__ == '__main__':
+    #solve("(A↔A)∧(¬A∨C)∧(C↔D)∧(¬D∨E)∧(B∨¬E)→F")
     app.run(debug=True)
