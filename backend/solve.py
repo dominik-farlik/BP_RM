@@ -169,7 +169,6 @@ def resolution(clauses, steps):
 
     # GET POSITIVE AND NEGATIVE INDEXES OF EACH LITERAL
     for literal in literal_set:
-        print(literal, "|", clauses)
         neg_literals, pos_literals = get_neg_pos_literal_indexes(clauses, literal)
 
         # MAKE RESOLVENT
@@ -183,7 +182,6 @@ def resolution(clauses, steps):
 
         # REMOVE CLAUSES USED TO COMBINE AND ADD NEW RESOLVENT
         clauses_to_remove = sorted(set(pos_literals + neg_literals), reverse=True)
-        print(resolvent_list, "|", clauses_to_remove)
         if len(clauses) > 1 and clauses_to_remove:
             for index in clauses_to_remove:
                 clauses.pop(index)
