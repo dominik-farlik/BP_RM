@@ -17,7 +17,7 @@ function Login({setToken}) {
             localStorage.setItem("token", token);
             navigate("/solve");
         } catch (err) {
-            setError(err.response?.data?.error || "Login failed");
+            setError("Přihlášení se nezdařilo, zkuste to prosím znovu." || err.response?.data?.error);
         }
     };
 

@@ -7,17 +7,17 @@ const Navbar = ({ token, handleLogout }) => {
   return (
     <nav className="navbar bg-body-tertiary sticky-top">
       <div className="container-fluid">
-          <h4 className="text-success fw-bold">Logical formula solver</h4>
+          <h4 className="text-success fw-bold">Kalkulátor logických formulí</h4>
         {!token ? (
           pathname === "/login" ? (
-            <Link to="/register" className="btn btn-outline-success me-2">Register</Link>
+            <Link to="/register" className="btn btn-outline-success me-2">Registrace</Link>
           ) : pathname === "/register" ? (
-            <Link to="/login" className="btn btn-outline-success me-2">Login</Link>
+            <Link to="/login" className="btn btn-outline-success me-2">Přihlášení</Link>
           ) : null
         ) : (
           <>
             <button className="btn btn-outline-danger" onClick={handleLogout}>
-              Logout
+              Odhlásit
             </button>
           </>
         )}

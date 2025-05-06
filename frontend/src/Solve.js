@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import axios from 'axios';
 import './App.css';
 import {useNavigate} from 'react-router-dom';
 import {solveFormula} from "./Api";
@@ -68,9 +67,9 @@ const LogicFormulaApp = () => {
             <form onSubmit={handleSubmit}>
                 <div className="input-group mb-3">
                     <input type="text" id="formula" value={formula} onChange={(e) => setFormula(e.target.value)}
-                           className="form-control" placeholder="Enter formula" required
+                           className="form-control" placeholder="Sem zadejte formuli" required
                     />
-                    <button type="submit" className="btn btn-success">Solve</button>
+                    <button type="submit" className="btn btn-success">Vyřešit</button>
                 </div>
                 <div className="input-group mb-3">
                     {["¬", "∧", "∨", "→", "↔", "(", ")"].map((symbol) => (
@@ -100,6 +99,7 @@ const LogicFormulaApp = () => {
                             <div key={index} className="list-group-item" style={{
                                 backgroundColor: index === steps.length - 1 ? (result ? "#198754" : "#dc3545") : "transparent",
                                 color: index === steps.length - 1 ? "white" : "black",
+                                fontWeight: index === steps.length - 1 && result ? "bold" : "normal"
                             }}>
                                 {step}
                             </div>

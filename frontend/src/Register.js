@@ -11,9 +11,9 @@ function Register() {
     try {
       await registerUser(username, password);
       setError("");
-      navigate("/login", { state: { message: "Registration successful! You can now log in." } });
+      navigate("/login", { state: { message: "Registrace byla úspěšná! Nyní se můžete přihlásit." } });
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed");
+      setError( "Registrace selhala, zkuste to prosím znovu." || err.response?.data?.error);
     }
   };
 

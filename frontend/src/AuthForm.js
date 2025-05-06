@@ -11,10 +11,10 @@ const AuthForm = ({ type, onSubmit, error, message }) => {
 
   return (
     <div className="container-sm shadow p-3 mb-5 bg-body-tertiary rounded" style={{ width: "40%", marginTop: "2%" }}>
-      <h2 className="text-center">{type === "login" ? "Login" : "Register"}</h2>
+      <h2 className="text-center">{type === "login" ? "Přihlášení" : "Registrace"}</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">Username</label>
+          <label className="form-label">Login</label>
           <input
             type="text"
             value={username}
@@ -24,7 +24,7 @@ const AuthForm = ({ type, onSubmit, error, message }) => {
           />
         </div>
         <div className="mb-3">
-          <label className="form-label">Password</label>
+          <label className="form-label">Heslo</label>
           <input
             type="password"
             value={password}
@@ -36,7 +36,7 @@ const AuthForm = ({ type, onSubmit, error, message }) => {
         {error && <div className="text-danger mb-3">{error}</div>}
         {message && <div className="text-primary mb-3">{message}</div>}
         <button type="submit" className="btn btn-success d-block mx-auto w-100">
-          {type === "login" ? "Login" : "Register"}
+          {type === "login" ? "Přihlásit" : "Registrovat"}
         </button>
       </form>
     </div>

@@ -1,0 +1,7 @@
+- prilohy = no date
+- popisky obrazku, tabulek + obsah
+
+preformulovat osoby do 3.
+rozvest rezolucni metodu
+kontrolovat tautologie i v rezolventach! mozna?
+citace, odkazy do testovani
