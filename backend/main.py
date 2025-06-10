@@ -39,36 +39,13 @@ class FormulaHistory(db.Model):  # type: ignore
 with app.app_context():
     db.create_all()
 
-"""
-@app.route('/api/history', methods=['GET'])
-def get_history():
-    data = request.get_json()
-    username = data.get('username')
-    user = User.query.filter_by(username=username).first()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    history = [
-        {
-            "userID": entry.id,
-            "formula": entry.formula,
-            "result": entry.result,
-            "timestamp": entry.timestamp.isoformat(),
-        }
-        for entry in user.formulas
-    ]
-
-    return jsonify(history), 200
-"""
-
-
 
 @app.route('/api/solve', methods=['POST'])
 def solve_formula():
     try:
         data = request.get_json()
         formula = data.get('formula')
+        conclusion = data.get('conclusion')
         if not formula:
             return jsonify({"error": "No formula provided."}), 400
         steps, result = solve(formula)
@@ -129,5 +106,4 @@ def login():
 
 
 if __name__ == '__main__':
-    #solve("(A↔A)∧(¬A∨C)∧(C↔D)∧(¬D∨E)∧(B∨¬E)→F")
     app.run(debug=True)

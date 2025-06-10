@@ -13,10 +13,10 @@ export const loginUser = async (username, password) => {
 };
 
 // Solve the formula (requires JWT token)
-export const solveFormula = async (formula, token) => {
+export const solveFormula = async (formula, conclusion, token) => {
   return axios.post(
     `${API_URL}/solve`,
-    { formula },
+    { formula, conclusion },
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
