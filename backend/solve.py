@@ -113,8 +113,10 @@ def translate_back(expression: str) -> str:
 
 def solve(formula: str):
     steps = []
+    steps.append("Negace závěru a přídaní do množiny klauzulí: %s" % translate_back(formula))
     formated_formula = prepare_for_cnf(formula)
-    steps.append("Rozložení ekvivalencí: %s" % translate_back(formated_formula))
+    if formula != translate_back(formated_formula):
+        steps.append("Rozložení ekvivalencí: %s" % translate_back(formated_formula))
     found_symbols = init_symbols(formated_formula)
     expression = eval(formated_formula, found_symbols)
     cnf = to_cnf(expression)
@@ -176,7 +178,9 @@ def resolution(clauses, steps):
         for pos_literal in pos_literals:
             for neg_literal in neg_literals:
                 resolvent = make_resolvent(copy.deepcopy(clauses[pos_literal]), copy.deepcopy(clauses[neg_literal]))
-                steps.append("Z klauzulí: %s a %s vznikne rezolventa: %s" % (clauses_to_string([clauses[pos_literal]]), clauses_to_string([clauses[neg_literal]]), clauses_to_string([resolvent]) if resolvent else "{}"))
+                steps.append("Z klauzulí: %s a %s vznikne rezolventa: %s" % (
+                clauses_to_string([clauses[pos_literal]]), clauses_to_string([clauses[neg_literal]]),
+                clauses_to_string([resolvent]) if resolvent else "{}"))
                 if resolvent:
                     resolvent_list.append(resolvent)
 
@@ -190,6 +194,7 @@ def resolution(clauses, steps):
             steps.append("Množina klauzulí: %s" % clauses_to_string(clauses))
 
     return steps, clauses
+
 
 def remove_single_type_occurrences(clauses):
     steps = []
@@ -206,7 +211,8 @@ def remove_single_type_occurrences(clauses):
     return steps, clauses
 
 
-def check_single_type_occurrence(pos_literals: list[int], neg_literals: list[int], clauses: list[list[str]], literal: str) -> Tuple[List, List]:
+def check_single_type_occurrence(pos_literals: list[int], neg_literals: list[int], clauses: list[list[str]],
+                                 literal: str) -> Tuple[List, List]:
     """
     If not "a" and "¬a" remove all clauses with that literal.
     """
@@ -243,6 +249,7 @@ def get_set_of_literals(clauses: list[list[str]]) -> list[str]:
                 literal_set.add(literal[1])
 
     return sorted(literal_set)
+
 
 def get_neg_pos_literal_indexes(clauses: list[list[str]], literal) -> tuple[list[int], list[int]]:
     neg_literals = []
