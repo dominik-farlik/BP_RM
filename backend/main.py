@@ -51,7 +51,7 @@ with app.app_context():
 def history():
     try:
         user_id = get_jwt_identity()
-        formulas = db.session.query(Formula).filter_by(user_id=user_id).limit(10).all()
+        formulas = db.session.query(Formula).filter_by(user_id=user_id).order_by(Formula.FormulaID.desc()).limit(10).all()
 
         formulas_list = []
         for f in formulas:

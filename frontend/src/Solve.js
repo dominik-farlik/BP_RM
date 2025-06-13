@@ -3,6 +3,7 @@ import './App.css';
 import {useNavigate} from 'react-router-dom';
 import {solveFormula} from "./Api";
 import History from "./History";
+import { getUserHistory } from "./Api";
 
 const LogicFormulaApp = () => {
     const [formula, setFormula] = useState('');
@@ -12,10 +13,21 @@ const LogicFormulaApp = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const activeInputRef = useRef(null);
+    const [formulas, setFormulas] = useState([]);
 
+    const fetchHistory = async () => {
+        try {
+            const response = await getUserHistory();
+            console.log("API response:", response);
+            setFormulas(response.data.formulas || []);
+        } catch (error) {
+            console.error("Chyba při načítání historie:", error);
+        }
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('token');
+        fetchHistory();
         if (!token) {
             navigate('/login');
         }
@@ -106,8 +118,8 @@ const LogicFormulaApp = () => {
                 </div>
 
                 <div className="mb-3" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <button type="submit" className="btn btn-success d-flex">Vyřešit</button>
-                    <History onSelect={handleSelectHistory} />
+                    <button type="submit" className="btn btn-success d-flex" onClick={fetchHistory}>Vyřešit</button>
+                    <History formulas={formulas} onSelect={handleSelectHistory} />
                 </div>
 
                 <div className="input-group mb-3">

@@ -19,3 +19,8 @@ services:
       - ./backend:/backend
     environment:
       FLASK_ENV: development
+
+  react:
+    build: ./frontend
+    ports:
+      - "3000:80"
