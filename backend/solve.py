@@ -111,7 +111,7 @@ def translate_back(expression: str) -> str:
     return expression
 
 
-def solve(formula: str):
+def solve(formula: str, conclusion: bool):
     steps = []
     steps.append("Negace závěru a přídaní do množiny klauzulí: %s" % translate_back(formula))
     formated_formula = prepare_for_cnf(formula)
@@ -127,7 +127,7 @@ def solve(formula: str):
     resolution_steps, clauses = resolution(clause_list, [])
     unique_literals = sorted(set(literal for clause in clauses for literal in clause))
     resolution_steps.append("Zbytek po použití rezoluční metody: {%s}" % ", ".join(unique_literals))
-    result, result_desc = get_result(clauses)
+    result, result_desc = get_result(clauses, conclusion)
     resolution_steps.append(result_desc)
     steps.extend(resolution_steps)
     return steps, result
@@ -331,11 +331,16 @@ def clauses_to_string(clauses: list[list[str]]) -> str:
     return clauses_str[:-1]
 
 
-def get_result(clauses: list[list[str]]) -> Tuple[bool, str]:
+def get_result(clauses: list[list[str]], conclusion: bool) -> Tuple[bool, str]:
     for clause in clauses:
         if not clause:
             clauses.remove(clause)
-    if clauses:
-        return False, "Formule není splnitelná"
+    if conclusion:
+        if clauses:
+            return False, "Nedošlo k očekávanému sporu, formule není splnitelná"
+        else:
+            return True, "Došlo k očekávanému sporu, formule je splnitelná"
+    if not clauses:
+        return False, "Došlo ke sporu, tato formule není splnitelná"
     else:
         return True, "Formule je splnitelná"

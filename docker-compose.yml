@@ -1,0 +1,21 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: bprm
+      MYSQL_DATABASE: bprm
+    ports:
+      - "3306:3306"
+
+  flask:
+    build: ./backend
+    container_name: flask
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/backend
+    environment:
+      FLASK_ENV: development

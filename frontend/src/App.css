@@ -1,0 +1,17 @@
+.custom-dropdown-menu {
+  width: max-content !important;  /* Make width adapt to longest content */
+  min-width: 0 !important;        /* Remove Bootstrap min-width */
+  max-width: 400px;               /* Optional: limit max width to avoid too wide */
+  border-radius: 5px;
+}
+.custom-dropdown-item {
+  white-space: nowrap;       /* No wrapping */
+  overflow: hidden;          /* Hide overflow */
+  text-overflow: ellipsis;   /* Show ... */
+  max-width: 100%;           /* Keep within parent */
+  cursor: pointer;
+}
+
+.custom-dropdown-item:hover {
+    background-color: #f6f7f8 !important;
+}

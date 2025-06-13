@@ -7,7 +7,7 @@ const Navbar = ({ token, handleLogout }) => {
   return (
     <nav className="navbar bg-body-tertiary sticky-top">
       <div className="container-fluid">
-          <h4 className="text-success fw-bold">Kalkulátor logických formulí</h4>
+          <h4 className="text-success fw-bold">Resolution SAT Solver</h4>
         {!token ? (
           pathname === "/login" ? (
             <Link to="/register" className="btn btn-outline-success me-2">Registrace</Link>
